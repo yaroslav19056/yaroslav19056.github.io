@@ -5,7 +5,7 @@ let balance = 0;
 let objects = [];
 let objectSize = 60; // Image size
 let objectSpeed = 4;
-let spawnRate = 0.05; // Initial spawn rate for objects
+let spawnRate = 0.1; // Initial spawn rate for objects
 
 // Adjust canvas size
 function setCanvasSize() {
