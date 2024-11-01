@@ -11,7 +11,7 @@ const appleImage = new Image();
 appleImage.src = 'apple.png';
 
 // Определяем размер хитбокса (на 20px больше объекта: по 10px с каждой стороны)
-const hitboxPadding = 10;
+const hitboxPadding = 20;
 const hitboxSize = objectSize + hitboxPadding * 2; // новый размер хитбокса
 
 // Создание нового объекта
