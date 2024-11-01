@@ -8,7 +8,11 @@ let objectSpeed = 2;
 
 // Загрузка изображения
 const appleImage = new Image();
-appleImage.src = '/fmztptp2-11.png'; // Замените на путь к вашему изображению
+appleImage.src = 'apple.png';
+
+// Определяем размер хитбокса (на 20px больше объекта: по 10px с каждой стороны)
+const hitboxPadding = 10;
+const hitboxSize = objectSize + hitboxPadding * 2; // новый размер хитбокса
 
 // Создание нового объекта
 function createObject() {
@@ -38,10 +42,10 @@ canvas.addEventListener('click', (e) => {
   for (let i = 0; i < objects.length; i++) {
     const obj = objects[i];
     if (
-      mouseX > obj.x &&
-      mouseX < obj.x + objectSize &&
-      mouseY > obj.y &&
-      mouseY < obj.y + objectSize
+      mouseX > obj.x - hitboxPadding &&
+      mouseX < obj.x + objectSize + hitboxPadding &&
+      mouseY > obj.y - hitboxPadding &&
+      mouseY < obj.y + objectSize + hitboxPadding
     ) {
       balance += 10;
       objects.splice(i, 1);
