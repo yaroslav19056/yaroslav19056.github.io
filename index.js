@@ -18,7 +18,7 @@ window.onresize = setCanvasSize;
 
 // Загрузка изображения
 const appleImage = new Image();
-appleImage.src = 'fmztptp2-11.png';
+appleImage.src = 'fimozzBgTransp.png';
 
 // Определяем размер хитбокса (на 20px больше объекта: по 10px с каждой стороны)
 const hitboxPadding = 20;
