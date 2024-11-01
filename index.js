@@ -6,6 +6,16 @@ let objects = [];
 let objectSize = 60; // Размер изображения (30x30 пикселей)
 let objectSpeed = 4;
 
+
+function setCanvasSize() {
+            canvas.width = window.innerWidth; // устанавливаем ширину канваса равной ширине окна
+            canvas.height = window.innerHeight; // устанавливаем высоту канваса равной высоте окна
+}
+
+        // Вызываем функцию при загрузке страницы и при изменении размеров окна
+window.onload = setCanvasSize;
+window.onresize = setCanvasSize;
+
 // Загрузка изображения
 const appleImage = new Image();
 appleImage.src = 'fmztptp2-11.png';
