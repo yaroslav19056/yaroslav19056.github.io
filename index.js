@@ -4,11 +4,11 @@ const ctx = canvas.getContext('2d');
 let balance = 0;
 let objects = [];
 let objectSize = 60; // Размер изображения (30x30 пикселей)
-let objectSpeed = 2;
+let objectSpeed = 4;
 
 // Загрузка изображения
 const appleImage = new Image();
-appleImage.src = 'apple.png';
+appleImage.src = 'fmztptp2-11.png';
 
 // Определяем размер хитбокса (на 20px больше объекта: по 10px с каждой стороны)
 const hitboxPadding = 20;
