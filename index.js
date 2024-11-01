@@ -3,7 +3,7 @@ const ctx = canvas.getContext('2d');
 
 let balance = 0;
 let objects = [];
-let objectSize = 30; // Размер изображения (30x30 пикселей)
+let objectSize = 60; // Размер изображения (30x30 пикселей)
 let objectSpeed = 2;
 
 // Загрузка изображения
