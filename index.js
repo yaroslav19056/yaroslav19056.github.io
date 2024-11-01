@@ -3,36 +3,39 @@ const ctx = canvas.getContext('2d');
 
 let balance = 0;
 let objects = [];
-let objectSize = 60; // Размер изображения (30x30 пикселей)
+let objectSize = 60; // Image size
 let objectSpeed = 4;
+let spawnRate = 0.05; // Initial spawn rate for objects
 
-
+// Adjust canvas size
 function setCanvasSize() {
-            canvas.width = window.innerWidth; // устанавливаем ширину канваса равной ширине окна
-            canvas.height = window.innerHeight; // устанавливаем высоту канваса равной высоте окна
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
 }
 
-        // Вызываем функцию при загрузке страницы и при изменении размеров окна
+// Debounce resize function
+let resizeTimeout;
+window.onresize = () => {
+  clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(setCanvasSize, 100);
+};
 window.onload = setCanvasSize;
-window.onresize = setCanvasSize;
 
-// Загрузка изображения
+// Load image
 const appleImage = new Image();
 appleImage.src = 'fimozzBgTransp.png';
 
-// Определяем размер хитбокса (на 20px больше объекта: по 10px с каждой стороны)
 const hitboxPadding = 20;
-const hitboxSize = objectSize + hitboxPadding * 2; // новый размер хитбокса
+const hitboxSize = objectSize + hitboxPadding * 2;
 
-// Создание нового объекта
+// Create new object
 function createObject() {
   const x = Math.random() * (canvas.width - objectSize);
   const y = -objectSize;
-  
   objects.push({ x, y });
 }
 
-// Анимация падения объектов
+// Update object positions
 function updateObjects() {
   for (let i = 0; i < objects.length; i++) {
     objects[i].y += objectSpeed;
@@ -44,7 +47,7 @@ function updateObjects() {
   }
 }
 
-// Обработка нажатий мыши
+// Handle mouse clicks for object removal and scoring
 canvas.addEventListener('click', (e) => {
   const mouseX = e.offsetX;
   const mouseY = e.offsetY;
@@ -64,24 +67,26 @@ canvas.addEventListener('click', (e) => {
   }
 });
 
-// Рендеринг объектов и текста баланса
+// Render objects and score
 function drawObjects() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  
-  // Отображение баланса
+
+  // Display balance with background
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'; // Background for balance
+  ctx.fillRect(0, 0, 120, 40);
   ctx.font = '20px Arial';
   ctx.fillStyle = 'black';
-  ctx.fillText(`Баланс: ${balance}`, 10, 30);
+  ctx.fillText(`Balance: ${balance}`, 10, 30);
 
-  // Отображение объектов (яблок)
+  // Display objects
   for (let obj of objects) {
     ctx.drawImage(appleImage, obj.x, obj.y, objectSize, objectSize);
   }
 }
 
-// Основной игровой цикл
+// Main game loop
 function gameLoop() {
-  if (Math.random() < 0.05) {
+  if (Math.random() < spawnRate) {
     createObject();
   }
 
@@ -90,7 +95,7 @@ function gameLoop() {
   requestAnimationFrame(gameLoop);
 }
 
-// Запуск игры после загрузки изображения
+// Start game after image loads
 appleImage.onload = () => {
   gameLoop();
 };
