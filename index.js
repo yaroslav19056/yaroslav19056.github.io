@@ -1,101 +1,142 @@
-const canvas = document.getElementById('gameCanvas');
+// Настройки
+const canvas = document.getElementById('pixelCanvas');
 const ctx = canvas.getContext('2d');
+const colorPicker = document.getElementById('colorPicker');
 
-let balance = 0;
-let objects = [];
-let objectSize = 60; // Image size
-let objectSpeed = 4;
-let spawnRate = 0.1; // Initial spawn rate for objects
+const gridSize = 350; // Размер сетки 1000x1000 клеток
+const cellSize = 10;  // Размер каждой клетки (в пикселях)
+canvas.width = window.innerWidth; // Полный размер окна
+canvas.height = window.innerHeight;
 
-// Adjust canvas size
-function setCanvasSize() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-}
+let currentColor = colorPicker.value;
 
-// Debounce resize function
-let resizeTimeout;
-window.onresize = () => {
-  clearTimeout(resizeTimeout);
-  resizeTimeout = setTimeout(setCanvasSize, 100);
-};
-window.onload = setCanvasSize;
+// Слушатель изменения цвета
+colorPicker.addEventListener('input', (e) => {
+  currentColor = e.target.value;
+});
 
-// Load image
-const appleImage = new Image();
-appleImage.src = 'fimozzBgTransp.png';
+// Данные пикселей (цвета)
+const pixelData = Array.from({ length: gridSize }, () =>
+  Array(gridSize).fill('#ffffff')
+);
 
-const hitboxPadding = 20;
-const hitboxSize = objectSize + hitboxPadding * 2;
+// Управление масштабом и перемещением
+let scale = 1;
+let offsetX = 0;
+let offsetY = 0;
 
-// Create new object
-function createObject() {
-  const x = Math.random() * (canvas.width - objectSize);
-  const y = -objectSize;
-  objects.push({ x, y });
-}
+// Отрисовка видимой области
+function drawVisibleGrid() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-// Update object positions
-function updateObjects() {
-  for (let i = 0; i < objects.length; i++) {
-    objects[i].y += objectSpeed;
+  const scaledCellSize = cellSize * scale;
 
-    if (objects[i].y > canvas.height) {
-      objects.splice(i, 1);
-      i--;
+  const startX = Math.floor(-offsetX / scaledCellSize);
+  const startY = Math.floor(-offsetY / scaledCellSize);
+
+  const endX = Math.ceil((canvas.width - offsetX) / scaledCellSize);
+  const endY = Math.ceil((canvas.height - offsetY) / scaledCellSize);
+
+  ctx.strokeStyle = '#ddd';
+  ctx.lineWidth = 0.5;
+
+  // Рисуем сетку
+  for (let x = startX; x <= endX; x++) {
+    ctx.beginPath();
+    ctx.moveTo(x * scaledCellSize + offsetX, 0);
+    ctx.lineTo(x * scaledCellSize + offsetX, canvas.height);
+    ctx.stroke();
+  }
+  for (let y = startY; y <= endY; y++) {
+    ctx.beginPath();
+    ctx.moveTo(0, y * scaledCellSize + offsetY);
+    ctx.lineTo(canvas.width, y * scaledCellSize + offsetY);
+    ctx.stroke();
+  }
+
+  // Рисуем клетки
+  for (let y = startY; y <= endY; y++) {
+    for (let x = startX; x <= endX; x++) {
+      if (x >= 0 && y >= 0 && x < gridSize && y < gridSize) {
+        ctx.fillStyle = pixelData[y][x];
+        ctx.fillRect(
+          x * scaledCellSize + offsetX,
+          y * scaledCellSize + offsetY,
+          scaledCellSize,
+          scaledCellSize
+        );
+      }
     }
   }
 }
 
-// Handle mouse clicks for object removal and scoring
-canvas.addEventListener('click', (e) => {
-  const mouseX = e.offsetX;
-  const mouseY = e.offsetY;
+// Окрашивание клетки
+function paintCell(x, y, color) {
+  if (x >= 0 && y >= 0 && x < gridSize && y < gridSize) {
+    pixelData[y][x] = color;
+    drawVisibleGrid();
+  }
+}
 
-  for (let i = 0; i < objects.length; i++) {
-    const obj = objects[i];
-    if (
-      mouseX > obj.x - hitboxPadding &&
-      mouseX < obj.x + objectSize + hitboxPadding &&
-      mouseY > obj.y - hitboxPadding &&
-      mouseY < obj.y + objectSize + hitboxPadding
-    ) {
-      balance += 10;
-      objects.splice(i, 1);
-      break;
-    }
+// Получение координат клетки по клику
+canvas.addEventListener('click', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const x = Math.floor((e.clientX - rect.left - offsetX) / (cellSize * scale));
+  const y = Math.floor((e.clientY - rect.top - offsetY) / (cellSize * scale));
+  paintCell(x, y, currentColor);
+});
+
+// Масштабирование (зум)
+canvas.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    
+    const zoomSpeed = 0.1;
+    const mouseX = e.clientX - canvas.offsetLeft; // Положение мыши относительно холста
+    const mouseY = e.clientY - canvas.offsetTop;
+  
+    // Координаты на холсте до изменения масштаба
+    const canvasX = (mouseX - offsetX) / scale;
+    const canvasY = (mouseY - offsetY) / scale;
+  
+    // Изменяем масштаб
+    const oldScale = scale;
+    scale += e.deltaY > 0 ? -zoomSpeed : zoomSpeed;
+    scale = Math.max(0.1, Math.min(scale, 10)); // Ограничиваем масштаб
+  
+    // Корректируем смещение
+    offsetX -= (canvasX * scale - canvasX * oldScale);
+    offsetY -= (canvasY * scale - canvasY * oldScale);
+  
+    drawVisibleGrid();
+  });
+  
+
+// Перетаскивание (панорамирование)
+let isDragging = false;
+let dragStartX = 0;
+let dragStartY = 0;
+
+canvas.addEventListener('mousedown', (e) => {
+  isDragging = true;
+  dragStartX = e.clientX - offsetX;
+  dragStartY = e.clientY - offsetY;
+});
+
+canvas.addEventListener('mousemove', (e) => {
+  if (isDragging) {
+    offsetX = e.clientX - dragStartX;
+    offsetY = e.clientY - dragStartY;
+    drawVisibleGrid();
   }
 });
 
-// Render objects and score
-function drawObjects() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+canvas.addEventListener('mouseup', () => {
+  isDragging = false;
+});
 
-  // Display balance with background
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'; // Background for balance
-  ctx.fillRect(0, 0, 120, 40);
-  ctx.font = '20px Arial';
-  ctx.fillStyle = 'black';
-  ctx.fillText(`Balance: ${balance}`, 10, 30);
+canvas.addEventListener('mouseleave', () => {
+  isDragging = false;
+});
 
-  // Display objects
-  for (let obj of objects) {
-    ctx.drawImage(appleImage, obj.x, obj.y, objectSize, objectSize);
-  }
-}
-
-// Main game loop
-function gameLoop() {
-  if (Math.random() < spawnRate) {
-    createObject();
-  }
-
-  updateObjects();
-  drawObjects();
-  requestAnimationFrame(gameLoop);
-}
-
-// Start game after image loads
-appleImage.onload = () => {
-  gameLoop();
-};
+// Инициализация
+drawVisibleGrid();

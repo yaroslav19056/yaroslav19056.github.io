@@ -1,0 +1,5 @@
+#pixelCanvas {
+  border: 1px solid #ccc;
+  image-rendering: pixelated; /* Для четких пикселей */
+  cursor: crosshair;
+}
